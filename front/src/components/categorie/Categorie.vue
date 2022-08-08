@@ -11,8 +11,9 @@
 
     <div class="container">
       <p v-for="item in categories" :key="item.id">
-        <span>{{item.name}}</span>
-        <button  v-if="wantToModifCategorie != item.id" @click="deleteCategory(item.id)">x</button>
+        <span @dblclick="wantToModifyCategorie = item.id" v-if="wantToModifyCategorie != item.id">{{item.name}}</span>
+        <input @keyup.enter="modifier(item.id)" v-model="modifyName" v-if="wantToModifyCategorie == item.id" type="text" name="" id="" @keyup.esc="wantToModifyCategorie = null">
+        <button @click="deleteCategory(item.id)">x</button>
         
       </p>
     </div>
@@ -29,6 +30,8 @@ export default {
       name: null,
       message: null,
       categories: [],
+      wantToModifyCategorie: null, //10
+      modifyName: null,
       
     };
   },
@@ -85,8 +88,32 @@ export default {
       }, 50)
 
     },
+   async modifier(id){
+      const url = "http://127.0.0.1:8000/api/categories/"+id;
+      let data = {"name": this.modifyName};
+      
+      await axios.put(url, data).then(
+        (res)=>{
+
+        },
+        (error)=>{
+
+        }
+
+      )
+      for(let i = 0; i<this.categories.length; i++){
+        if(this.categories[i].id == this.wantToModifyCategorie){
+          this.categories[i].name = this.modifyName;
+        }
+
+      }
+      this.wantToModifyCategorie = null;
+      this.modifyName = null
+    }
 
   },
+
+ 
   beforeMount(){
     this.getAllCategories();
   }

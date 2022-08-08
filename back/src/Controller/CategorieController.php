@@ -70,8 +70,20 @@ class CategorieController extends AbstractController
 
     }
 
+    /**
+     * @Route("api/categories/{id}", methods={"PUT"})
+    */
+    public function modifyCategoryName(ManagerRegistry $mr, HttpFoundationRequest $request, int $id,
+     CategoriesRepository $repo ){
+        $manager = $mr->getManager();
+        $categorie = $repo->find($id);
+        $requestCategorie = json_decode($request->getContent());
+        $categorie->setName($requestCategorie->{'name'});
 
+        $manager->persist($categorie);
+        $manager->flush();
+        
+        return new Response('ok', Response::HTTP_OK);
 
-
- 
+    }
 }
