@@ -21,7 +21,7 @@ class AuthController extends AbstractController
     //         'controller_name' => 'AuthController',
     //     ]);
     // }
-
+ 
     /**
      * @Route("api/inscription", methods={"POST"})
     */
@@ -118,6 +118,7 @@ class AuthController extends AbstractController
         $infoUser = new stdClass();
         $infoUser->email = $maybeUser->getEmail();
         $infoUser->role = $maybeUser->getRoles()[0];
+        $infoUser->image ="http://localhost:8000/uploads/profil/".$maybeUser->getImage();
 
         return new Response(json_encode($infoUser), Response::HTTP_OK);
 
@@ -145,4 +146,29 @@ class AuthController extends AbstractController
         return new Response('ok', Response::HTTP_OK);
     }
 
+       /**
+     * @Route("api/image-profil", methods={"POST"})
+     */
+    public function changeImageProfil (HttpFoundationRequest $request, UserRepository $repo, ManagerRegistry $mr){
+    //    dd($request);
+        $token = $request->request->get('token');
+        $image = $request->files->get('image');
+        
+        $user = $repo->findOneBy(['token'=> $token]);
+        if($user->getImage() != null){
+            unlink($this->getParameter('image_profil')."/".$user->getImage()); 
+        }
+        $fichier = md5(uniqid()).'.'.$image->guessExtension();
+        $image->move(
+            $this->getParameter('image_profil'), $fichier
+        );
+
+        $user->setImage($fichier);
+
+        $manager = $mr->getManager();
+        $manager->persist($user);
+        $manager->flush();
+
+        return new Response("http://localhost:8000/uploads/profil/".$user->getImage(), Response::HTTP_OK);
+    }
 }
